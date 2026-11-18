@@ -53,4 +53,5 @@ def test_ranking_question_ignores_memory(bot):
 def test_catalog_and_unknown(bot):
     assert bot.ask("Which phones do you have?").intent == "catalog"
     r = bot.ask("Tell me about the Pixel 9")
-    assert r.intent == "general"
+    assert r.intent == "out_of_scope" and "Pixel" in r.answer and "Galaxy S23" in r.answer
+    assert bot.ask("Is the iphone 15 better than the S23?").intent != "out_of_scope"  # Samsung phone named -> answer it

@@ -133,7 +133,9 @@ class ChatBot:
             phones = [self.by_id[i] for i in sess.last_phone_ids if i in self.by_id]
             used_memory = bool(phones)
 
-        if catalog and not phones:
+        if not phones and A.mentions_other_brand(question):
+            intent = "out_of_scope"
+        elif catalog and not phones:
             intent = "catalog"
         elif len(phones) >= 2:
             intent = "comparison"
@@ -265,7 +267,14 @@ class ChatBot:
         context = self._build_context(chunks, extras)
 
         answer, llm_used = None, "none"
-        if self.llm is not None:
+        if qa.intent == "out_of_scope":  # answered directly – no point asking the LLM about data we don't have
+            brand = A.mentions_other_brand(question)
+            if brand.islower():
+                brand = {"iphone": "iPhone", "oneplus": "OnePlus", "xperia": "Xperia"}.get(brand, brand.title())
+            answer = (f"Sorry, {brand} isn't in my database. "
+                      f"I only cover these {len(self.phones)} Samsung Galaxy models: "
+                      + ", ".join(p.name.removeprefix("Samsung ") for p in self.phones) + ".")
+        elif self.llm is not None:
             messages = [SystemMessage(content=SYSTEM_PROMPT)]
             for q, a in sess.history[-settings.chat_history_turns:]:
                 messages += [HumanMessage(content=q), AIMessage(content=a)]

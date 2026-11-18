@@ -103,6 +103,16 @@ def is_catalog_question(text: str) -> bool:
     return bool(LIST_PATTERNS.search(text))
 
 
+OTHER_BRANDS = re.compile(r"\b(iphone|apple|pixel|google|oneplus|xiaomi|redmi|poco|huawei|honor|motorola|moto|nokia|"
+                          r"oppo|vivo|realme|sony|xperia|asus|nothing phone|tecno|infinix)\b", re.I)
+
+
+def mentions_other_brand(text: str) -> str | None:
+    """Return the non-Samsung brand/model mentioned, if any."""
+    m = OTHER_BRANDS.search(text)
+    return m.group(0) if m else None
+
+
 def ranking_metric(aspect: Aspect, text: str) -> str | None:
     """Pick the most appropriate column to rank by for this aspect and wording."""
     w = set(_words(text))
