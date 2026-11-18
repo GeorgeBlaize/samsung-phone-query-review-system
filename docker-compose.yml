@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: samsung_phones
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d samsung_phones"]
+      interval: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    profiles: ["llm"]   # start with: docker compose --profile llm up
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/samsung_phones
+      LLM_PROVIDER: ${LLM_PROVIDER:-auto}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+      HF_TOKEN: ${HF_TOKEN:-}
+      HF_MODEL: ${HF_MODEL:-meta-llama/Llama-3.1-8B-Instruct}
+    ports:
+      - "8000:8000"
+    # Load the committed scrape export into Postgres, then serve the API.
+    command: sh -c "python -m app.scraper.run --from-json data/phones.json && uvicorn app.api.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  pgdata:
+  ollama:

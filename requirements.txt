@@ -1,0 +1,28 @@
+# Scraping
+requests>=2.32
+beautifulsoup4>=4.12
+lxml>=5.0
+
+# Database
+SQLAlchemy>=2.0
+psycopg[binary]>=3.2
+
+# LLM / RAG / multi-agent
+langchain-core>=1.0
+langchain-openai>=1.0      # OpenAI-compatible client used for Ollama + Hugging Face router
+langgraph>=1.0
+scikit-learn>=1.5          # TF-IDF retriever (default)
+numpy>=2.0
+
+# API
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+python-dotenv>=1.0
+
+# Tests
+pytest>=8.0
+httpx>=0.27
+
+# Optional: dense embeddings for the retriever (set EMBEDDING_BACKEND=sentence-transformers)
+# sentence-transformers>=3.0
