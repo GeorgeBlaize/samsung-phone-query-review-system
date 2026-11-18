@@ -81,6 +81,7 @@ class Phone(Base):
     antutu_version: Mapped[str | None] = mapped_column(String(20))
     geekbench_score: Mapped[int | None] = mapped_column(Integer)
     geekbench_version: Mapped[str | None] = mapped_column(String(20))
+    geekbench6_score: Mapped[int | None] = mapped_column(Integer)
     price_usd: Mapped[float | None] = mapped_column(Float)
     price_text: Mapped[str | None] = mapped_column(String(200))
 

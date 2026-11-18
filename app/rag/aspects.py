@@ -16,7 +16,7 @@ class Aspect:
 
 ASPECTS: dict[str, Aspect] = {a.name: a for a in [
     Aspect("battery", ("battery", "charging", "charge", "endurance", "mah", "battery life", "last", "lasts"),
-           ("Battery", "Our Tests"), ("battery_endurance_h", "battery_active_use_h", "battery_mah")),
+           ("Battery", "Our Tests"), ("battery_active_use_h", "battery_endurance_h", "battery_mah")),
     Aspect("charging", ("charging", "charger", "fast charge", "wireless charging", "watt"),
            ("Battery",), ("charging_wired_w", "charging_wireless_w")),
     Aspect("camera", ("camera", "cameras", "photo", "photos", "picture", "selfie", "video", "zoom", "lens",
@@ -27,8 +27,8 @@ ASPECTS: dict[str, Aspect] = {a.name: a for a in [
            ("Display",), ("display_size_in", "ppi", "refresh_rate_hz", "peak_brightness_nits")),
     Aspect("performance", ("performance", "processor", "chipset", "chip", "cpu", "gpu", "fast", "fastest", "speed",
                            "benchmark", "antutu", "geekbench", "gaming", "snapdragon", "exynos", "powerful"),
-           # GeekBench v5.1 is measured the same way for every phone; AnTuTu versions differ (v8/v9/v10)
-           ("Platform", "Memory", "Our Tests"), ("geekbench_score", "antutu_score")),
+           # GeekBench 5 / 6 kept separate (different scales); AnTuTu versions differ (v8/v9/v10)
+           ("Platform", "Memory", "Our Tests"), ("geekbench_score", "geekbench6_score", "antutu_score")),
     Aspect("memory", ("ram", "storage", "memory", "gb", "tb"), ("Memory",), ("ram_gb", "max_storage_gb")),
     Aspect("price", ("price", "prices", "cost", "costs", "cheap", "cheapest", "expensive", "afford", "affordable",
                      "budget", "value", "$", "usd", "money", "pricing"),

@@ -93,9 +93,33 @@ def parse_benchmarks(test_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
-def latest_benchmark(benchmarks: list[dict[str, Any]], prefix: str) -> dict[str, Any] | None:
+def latest_benchmark(benchmarks: list[dict[str, Any]], prefix: str, major: int | None = None) -> dict[str, Any] | None:
     matches = [b for b in benchmarks if b["name"].lower().startswith(prefix)]
+    if major is not None:
+        matches = [b for b in matches if _version_key(b["version"])[0] == major]
     return max(matches, key=lambda b: _version_key(b["version"])) if matches else None
+
+
+def benchmark_fields(benchmarks: list[dict[str, Any]]) -> dict[str, Any]:
+    """Denormalised benchmark columns.
+
+    GeekBench 5 and 6 use different scales, so they are kept in separate columns
+    (older phones were only tested on v5, the newest only on v6).
+    """
+    antutu = latest_benchmark(benchmarks, "antutu")
+    gb5 = latest_benchmark(benchmarks, "geekbench", major=5)
+    gb6 = latest_benchmark(benchmarks, "geekbench", major=6)
+    active = latest_benchmark(benchmarks, "battery active")
+    endurance = latest_benchmark(benchmarks, "battery endurance")
+    return {
+        "battery_active_use_h": active["score"] if active else None,
+        "battery_endurance_h": endurance["score"] if endurance else None,
+        "antutu_score": _to_int(antutu["score"]) if antutu else None,
+        "antutu_version": antutu["version"] if antutu else None,
+        "geekbench_score": _to_int(gb5["score"]) if gb5 else None,
+        "geekbench_version": gb5["version"] if gb5 else None,
+        "geekbench6_score": _to_int(gb6["score"]) if gb6 else None,
+    }
 
 
 def parse_memory(text: str | None) -> tuple[float | None, str | None, int | None]:
@@ -186,8 +210,6 @@ def parse_phone_page(html: str, slug: str, url: str) -> dict[str, Any]:
     benchmarks = parse_benchmarks([s for s in specs if s["category"] in ("Our Tests", "Tests")])
     prices = parse_prices(by_key.get("price"))
 
-    antutu, geekbench = latest_benchmark(benchmarks, "antutu"), latest_benchmark(benchmarks, "geekbench")
-    active, endurance = latest_benchmark(benchmarks, "battery active"), latest_benchmark(benchmarks, "battery endurance")
     usd = next((p["amount"] for p in prices if p["currency"] == "USD"), None)
     body_other = " ".join(filter(None, [spec("Body", "Build"), by_key.get("bodyother"), spec("Body", "SIM")]))
     ip = re.search(r"\bIP\d{2}\w?\b", body_other)
@@ -228,12 +250,7 @@ def parse_phone_page(html: str, slug: str, url: str) -> dict[str, Any]:
         "battery_mah": _to_int(_first_float(r"(\d+)\s*mAh", by_key.get("batdescription1"))),
         "charging_wired_w": wired,
         "charging_wireless_w": wireless,
-        "battery_active_use_h": active["score"] if active else None,
-        "battery_endurance_h": endurance["score"] if endurance else None,
-        "antutu_score": _to_int(antutu["score"]) if antutu else None,
-        "antutu_version": antutu["version"] if antutu else None,
-        "geekbench_score": _to_int(geekbench["score"]) if geekbench else None,
-        "geekbench_version": geekbench["version"] if geekbench else None,
+        **benchmark_fields(benchmarks),
         "price_usd": usd,
         "price_text": by_key.get("price"),
         "colors": by_key.get("colors"),

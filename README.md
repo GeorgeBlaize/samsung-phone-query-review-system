@@ -154,5 +154,6 @@ tests/                 pytest suite
 
 ## Notes
 - **Pricing**: GSMArena lists *current* market prices, not launch prices, and the chatbot says so.
-- **Benchmarks**: AnTuTu versions (v8/v9/v10) are not comparable across phones, so performance rankings lead with GeekBench v5.1, which is measured the same way for all of them.
+- **Benchmarks**: GSMArena tested older phones on GeekBench 5 and newer ones on GeekBench 6, which use different scales. They are stored as separate columns (`geekbench_score`, `geekbench6_score`), so rankings and comparisons only ever compare the same version. AnTuTu scores carry their version (v8/v9/v10) for the same reason.
+- **Battery tests**: GSMArena replaced its old *endurance rating* with an *active use score* in 2024. The S24 series only has the new test and the S21/S22 series only the old one, so battery rankings show both tests plus raw capacity (mAh).
 - **Rate limits**: GSMArena's search page sits behind a Cloudflare challenge, and the site rate-limits aggressively, sometimes with a `Retry-After` of several hours. The scraper therefore targets spec pages directly, caches them, and stops cleanly when it is rate-limited. Re-running it resumes from the cache.

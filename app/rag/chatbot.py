@@ -37,7 +37,8 @@ Answer ONLY using the facts in the CONTEXT (scraped from GSMArena). Rules:
 - Quote concrete numbers (MP, mAh, Hz, scores, prices) exactly as given in the context.
 - For comparisons, compare the phones side by side and say which is better for each point and overall.
 - For "best"/ranking questions, use the RANKING tables; mention the winner and runners-up.
-- Benchmark scores from different AnTuTu versions (v8/v9/v10) are not directly comparable; prefer GeekBench when they differ.
+- Only compare benchmark scores of the same version: GeekBench 5 and GeekBench 6 are separate metrics, and AnTuTu v8/v9/v10 scores are not comparable with each other.
+- Battery: GSMArena's "active use score" (newer test) and "endurance rating" (older test) are different tests; say which one you use.
 - Prices are GSMArena's current listed prices, which may differ from launch prices.
 - If the context does not contain the answer, say so briefly and mention which phones you have data for.
 Use short paragraphs or bullet points. Do not invent specifications."""

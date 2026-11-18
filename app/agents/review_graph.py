@@ -37,9 +37,10 @@ log = logging.getLogger(__name__)
 # metrics used for positioning, with the aspect they belong to
 ANALYSIS_METRICS = {
     "display_size_in": "display", "ppi": "display", "peak_brightness_nits": "display",
-    "geekbench_score": "performance", "ram_gb": "performance",
+    "geekbench_score": "performance", "geekbench6_score": "performance", "ram_gb": "performance",
     "main_camera_mp": "camera", "optical_zoom_x": "camera", "selfie_camera_mp": "camera",
-    "battery_mah": "battery", "battery_endurance_h": "battery", "charging_wired_w": "battery",
+    "battery_mah": "battery", "battery_active_use_h": "battery", "battery_endurance_h": "battery",
+    "charging_wired_w": "battery",
     "weight_g": "design", "price_usd": "value", "max_storage_gb": "storage",
 }
 
@@ -150,7 +151,7 @@ Structure:
 ## Pros
 ## Cons
 Rules: cite exact numbers from the data; explain what they mean for real users; use the analyst's rankings
-("#2 of 15 for battery endurance") to give context; AnTuTu scores of different versions are not comparable;
+("#2 of 15 for battery endurance") to give context; GeekBench 5 vs 6 and different AnTuTu versions are not comparable;
 prices are current GSMArena listings. If several phones are given, write one comparative review and finish
 with a "Which should you buy?" section. Never invent specifications."""
 
@@ -271,7 +272,7 @@ Resolution {_spec(sheet, 'Display', 'Resolution') or 'n/a'}. Display score: {sc.
 
 ## Performance
 Powered by {(sheet.get('chipset') or 'n/a').replace(chr(10), ' / ')} with up to {fmt('ram_gb')} RAM.
-GeekBench: {fmt('geekbench_score')}; AnTuTu: {fmt('antutu_score')} ({sheet.get('antutu_version') or 'n/a'}).
+GeekBench 5: {fmt('geekbench_score')}; GeekBench 6: {fmt('geekbench6_score')}; AnTuTu: {fmt('antutu_score')} ({sheet.get('antutu_version') or 'n/a'}).
 Performance score: {sc.get('performance', 'n/a')}/10.
 
 ## Cameras
@@ -281,7 +282,8 @@ Selfie: {_spec(sheet, 'Selfie camera', 'Single') or 'n/a'}. Camera score: {sc.ge
 
 ## Battery & Charging
 {fmt('battery_mah')} battery; charging: {_spec(sheet, 'Battery', 'Charging') or 'n/a'}.
-GSMArena endurance rating: {fmt('battery_endurance_h')}. Battery score: {sc.get('battery', 'n/a')}/10.
+GSMArena active-use score: {fmt('battery_active_use_h')}; endurance rating (older test): {fmt('battery_endurance_h')}.
+Battery score: {sc.get('battery', 'n/a')}/10.
 
 ## Software
 {sheet.get('os') or 'n/a'}.

@@ -50,7 +50,8 @@ METRICS: dict[str, Metric] = {m.column: m for m in [
     Metric("refresh_rate_hz", "Refresh rate", "Hz"),
     Metric("peak_brightness_nits", "Peak brightness", "nits"),
     Metric("antutu_score", "AnTuTu score", "points"),
-    Metric("geekbench_score", "GeekBench score", "points"),
+    Metric("geekbench_score", "GeekBench 5 score", "points"),
+    Metric("geekbench6_score", "GeekBench 6 score", "points"),
     Metric("ram_gb", "Max RAM", "GB"),
     Metric("max_storage_gb", "Max storage", "GB"),
     Metric("weight_g", "Weight", "g", higher_is_better=False),
@@ -93,8 +94,12 @@ def save_phone(session: Session, record: dict[str, Any]) -> Phone:
 
 
 def load_json(session: Session, path: Path) -> int:
+    from app.scraper.parser import benchmark_fields
+
     records = json.loads(path.read_text(encoding="utf-8"))
     for record in records:
+        # re-derive benchmark columns so exports from older parser versions stay consistent
+        record.update(benchmark_fields(record.get("benchmarks", [])))
         save_phone(session, record)
     return len(records)
 

@@ -56,7 +56,8 @@ def template_answer(question: str, qa: "QueryAnalysis", chunks: list[Chunk], ext
         for a in qa.aspects or []:
             cols += [m for m in a.metrics if m not in cols]
         if not cols:
-            cols = ["geekbench_score", "display_size_in", "main_camera_mp", "battery_mah", "battery_endurance_h", "price_usd"]
+            cols = ["geekbench_score", "geekbench6_score", "display_size_in", "main_camera_mp", "battery_mah",
+                    "battery_active_use_h", "battery_endurance_h", "price_usd"]
         names = " vs ".join(p.name for p in qa.phones)
         out = [f"**{names}**" + (f" – {', '.join(a.name for a in qa.aspects)}" if qa.aspects else ""), ""]
         out += _winner_lines(qa.phones, cols) or ["(no comparable numeric data)"]

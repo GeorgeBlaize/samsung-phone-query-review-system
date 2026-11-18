@@ -42,6 +42,7 @@ CREATE TABLE phones (
 	antutu_version VARCHAR(20), 
 	geekbench_score INTEGER, 
 	geekbench_version VARCHAR(20), 
+	geekbench6_score INTEGER, 
 	price_usd FLOAT, 
 	price_text VARCHAR(200), 
 	colors TEXT, 
@@ -92,6 +93,6 @@ CREATE TABLE specifications (
 	FOREIGN KEY(phone_id) REFERENCES phones (id) ON DELETE CASCADE
 );
 
-CREATE INDEX ix_specifications_category ON specifications (category);
-
 CREATE INDEX ix_specifications_phone_id ON specifications (phone_id);
+
+CREATE INDEX ix_specifications_category ON specifications (category);
