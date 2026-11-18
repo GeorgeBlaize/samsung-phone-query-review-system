@@ -35,6 +35,7 @@ log = logging.getLogger(__name__)
 SYSTEM_PROMPT = """You are a knowledgeable, concise assistant for Samsung Galaxy smartphones.
 Answer ONLY using the facts in the CONTEXT (scraped from GSMArena). Rules:
 - Quote concrete numbers (MP, mAh, Hz, scores, prices) exactly as given in the context.
+- Never do arithmetic yourself. For differences between phones, copy the "Difference (pre-computed)" column exactly.
 - For comparisons, compare the phones side by side and say which is better for each point and overall.
 - For "best"/ranking questions, use the RANKING tables; mention the winner and runners-up.
 - Only compare benchmark scores of the same version: GeekBench 5 and GeekBench 6 are separate metrics, and AnTuTu v8/v9/v10 scores are not comparable with each other.
@@ -183,8 +184,9 @@ class ChatBot:
             cols += [m for m in a.metrics if m not in cols]
         if not cols:
             return ""
-        header = "| Metric | " + " | ".join(p.name for p in phones) + " |"
-        lines = ["COMPARISON TABLE:", header, "|" + "---|" * (len(phones) + 1)]
+        two = len(phones) == 2
+        header = "| Metric | " + " | ".join(p.name for p in phones) + (" | Difference (pre-computed) |" if two else " |")
+        lines = ["COMPARISON TABLE:", header, "|" + "---|" * (len(phones) + 1 + two)]
         for col in cols:
             metric = METRICS[col]
             vals = [getattr(p, col) for p in phones]
@@ -192,8 +194,27 @@ class ChatBot:
                 continue
             cells = [metric.fmt(v) + (f" [{p.antutu_version}]" if col == "antutu_score" and p.antutu_version else "")
                      for v, p in zip(vals, phones)]
+            if two:
+                cells.append(self._difference(phones, col, vals))
             lines.append(f"| {metric.label} | " + " | ".join(cells) + " |")
         return "\n".join(lines)
+
+    @staticmethod
+    def _difference(phones: list[Phone], col: str, vals: list) -> str:
+        """Exact difference computed in code, so the LLM never has to do arithmetic."""
+        a, b = vals
+        if a is None or b is None:
+            return "not comparable (missing data)"
+        if col == "antutu_score" and phones[0].antutu_version != phones[1].antutu_version:
+            return "not comparable (different AnTuTu versions)"
+        if a == b:
+            return "equal"
+        metric = METRICS[col]
+        diff = abs(a - b)
+        pct = diff / min(a, b) * 100 if min(a, b) else 0
+        winner = phones[0] if (a > b) == metric.higher_is_better else phones[1]
+        more = "higher" if winner.name == phones[vals.index(max(vals))].name else "lower"
+        return f"{metric.fmt(round(diff, 2))} ({pct:.0f}%) {more} – {winner.name} is better"
 
     def retrieve(self, question: str, qa: QueryAnalysis) -> tuple[list[Chunk], list[str]]:
         chunks: list[Chunk] = []
