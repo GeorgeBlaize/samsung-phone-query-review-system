@@ -60,7 +60,7 @@ All providers use LangChain's OpenAI-compatible client:
 
 | `LLM_PROVIDER` | model | setup |
 |---|---|---|
-| `ollama` | `llama3.1:8b` (any Ollama model) | install [Ollama](https://ollama.com), then `ollama pull llama3.1:8b` |
+| `ollama` | `llama3.1:8b`, or `llama3.2:3b` on 8 GB RAM laptops (any Ollama model) | install [Ollama](https://ollama.com), then `ollama pull llama3.2:3b` and set `OLLAMA_MODEL=llama3.2:3b` |
 | `huggingface` | `meta-llama/Llama-3.1-8B-Instruct` (any router model) | set `HF_TOKEN` |
 | `openai` | `gpt-4o-mini` | set `OPENAI_API_KEY` (optional) |
 | `none` | – | template answers only |
