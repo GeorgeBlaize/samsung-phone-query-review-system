@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Samsung Phone Query & Review API",
-    "description": "All endpoints of the Samsung Phone Query & Review System.\n\n1. Start the server: `.venv\\Scripts\\python -m uvicorn app.api.main:app`\n2. Run the requests top to bottom. \"3c Follow-up\" reuses the session_id saved by \"3b\".\n\nChat answers take ~10-40 s and reviews ~2-4 min when the LLM runs locally on CPU (Ollama).",
+    "description": "All endpoints of the Samsung Phone Query & Review System.\n\n1. Start the server: `.venv\\Scripts\\python -m uvicorn app.api.main:app`\n2. Run the requests top to bottom. \"3b Follow-up\" reuses the session_id saved by \"3a\".\n\nChat answers take ~10-40 s and reviews ~2-4 min when the LLM runs locally on CPU (Ollama).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -108,7 +108,7 @@
       "name": "3. Chatbot - comparison & memory",
       "item": [
         {
-          "name": "3b S23 vs S22 performance (saves session)",
+          "name": "3a S23 vs S22 performance (saves session)",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/chat",
@@ -123,7 +123,7 @@
           ]}}]
         },
         {
-          "name": "3c Follow-up: and their price? (uses session)",
+          "name": "3b Follow-up: and their price? (uses session)",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/chat",
@@ -136,7 +136,7 @@
           ]}}]
         },
         {
-          "name": "3d Batch - several questions at once",
+          "name": "3c Batch - several questions at once",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/chat/batch",
@@ -149,7 +149,7 @@
           ]}}]
         },
         {
-          "name": "3e Non-Samsung phone (out of scope)",
+          "name": "3d Non-Samsung phone (out of scope)",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/chat",
@@ -162,7 +162,7 @@
           ]}}]
         },
         {
-          "name": "3f Clear the chat session",
+          "name": "3e Clear the chat session",
           "request": { "method": "DELETE", "url": "{{baseUrl}}/chat/{{sessionId}}" },
           "event": [{ "listen": "test", "script": { "exec": [
             "pm.test('status 200', () => pm.response.to.have.status(200));"
