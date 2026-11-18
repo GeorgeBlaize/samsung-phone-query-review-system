@@ -37,7 +37,8 @@ class Settings:
     # auto | ollama | huggingface | openai | none
     llm_provider: str = field(default_factory=lambda: (_env("LLM_PROVIDER", "auto") or "auto").lower())
     llm_temperature: float = field(default_factory=lambda: float(_env("LLM_TEMPERATURE", "0.2")))
-    llm_timeout: float = field(default_factory=lambda: float(_env("LLM_TIMEOUT", "120")))
+    # Generous default: a full review from a small local model on a laptop CPU can take 3-5 minutes.
+    llm_timeout: float = field(default_factory=lambda: float(_env("LLM_TIMEOUT", "420")))
 
     ollama_base_url: str = field(default_factory=lambda: _env("OLLAMA_BASE_URL", "http://localhost:11434"))
     ollama_model: str = field(default_factory=lambda: _env("OLLAMA_MODEL", "llama3.1:8b"))

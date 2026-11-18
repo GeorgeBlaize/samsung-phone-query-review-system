@@ -128,6 +128,8 @@ uvicorn app.api.main:app --reload            # API on http://localhost:8000/docs
 python -m app.cli chat                       # terminal chatbot
 python -m app.cli review "Galaxy S23" --trace
 ```
+A hosted PostgreSQL such as [Neon](https://neon.tech) works without installing anything: copy its connection string into `.env` with the `postgresql+psycopg://` prefix, e.g. `DATABASE_URL=postgresql+psycopg://user:password@host/neondb?sslmode=require`, then run the `--from-json` load above. The project was verified end to end this way on PostgreSQL 18.
+
 For a quick start without PostgreSQL, set `DATABASE_URL=sqlite:///./data/samsung_phones.db`.
 
 ### Tests

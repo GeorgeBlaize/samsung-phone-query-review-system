@@ -62,7 +62,9 @@ def get_llm() -> tuple[BaseChatModel | None, LLMInfo]:
     common = {"temperature": settings.llm_temperature, "timeout": settings.llm_timeout, "max_retries": 1}
     if provider == "ollama":
         model = settings.ollama_model
-        llm = ChatOpenAI(model=model, base_url=f"{settings.ollama_base_url}/v1", api_key="ollama", **common)
+        # A local model that timed out will just time out again; retrying only doubles the wait.
+        llm = ChatOpenAI(model=model, base_url=f"{settings.ollama_base_url}/v1", api_key="ollama",
+                         **{**common, "max_retries": 0})
     elif provider == "huggingface":
         if not settings.hf_token:
             raise RuntimeError("LLM_PROVIDER=huggingface requires HF_TOKEN")
