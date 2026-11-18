@@ -1,0 +1,224 @@
+{
+  "info": {
+    "name": "Samsung Phone Query & Review API",
+    "description": "All endpoints of the Samsung Phone Query & Review System.\n\n1. Start the server: `.venv\\Scripts\\python -m uvicorn app.api.main:app`\n2. Run the requests top to bottom. \"3c Follow-up\" reuses the session_id saved by \"3b\".\n\nChat answers take ~10-40 s and reviews ~2-4 min when the LLM runs locally on CPU (Ollama).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" },
+    { "key": "sessionId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Health & data",
+      "item": [
+        {
+          "name": "1a Health check",
+          "request": { "method": "GET", "url": "{{baseUrl}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('15 phones loaded', () => pm.expect(pm.response.json().phones).to.eql(15));"
+          ]}}]
+        },
+        {
+          "name": "1b List all phones",
+          "request": { "method": "GET", "url": "{{baseUrl}}/phones" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('15 phones', () => pm.expect(pm.response.json().length).to.eql(15));"
+          ]}}]
+        },
+        {
+          "name": "1c Full spec sheet (Galaxy S24 Ultra)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/phones/galaxy-s24-ultra" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('correct phone', () => pm.expect(pm.response.json().name).to.eql('Samsung Galaxy S24 Ultra'));"
+          ]}}]
+        },
+        {
+          "name": "1d Ranking - biggest battery",
+          "request": { "method": "GET", "url": "{{baseUrl}}/rankings/battery_mah?limit=5" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "1e Ranking - cheapest",
+          "request": { "method": "GET", "url": "{{baseUrl}}/rankings/price_usd?limit=5" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "1f Compare S23 vs S22",
+          "request": { "method": "GET", "url": "{{baseUrl}}/compare?phones=s23&phones=s22" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('S23 wins GeekBench 5', () => pm.expect(pm.response.json().metrics.geekbench_score.best).to.include('Samsung Galaxy S23'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "2. Chatbot - sample questions",
+      "item": [
+        {
+          "name": "2a Camera specs of the S23",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question\": \"What are the camera specs of the Samsung Galaxy S23?\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('spec lookup for the S23', () => { const r = pm.response.json(); pm.expect(r.intent).to.eql('spec_lookup'); pm.expect(r.phones).to.include('Samsung Galaxy S23'); });"
+          ]}}]
+        },
+        {
+          "name": "2b Best battery life",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question\": \"Which Samsung phone has the best battery life?\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('ranking intent', () => pm.expect(pm.response.json().intent).to.eql('ranking'));"
+          ]}}]
+        },
+        {
+          "name": "2c Screen size of the S22",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question\": \"What is the screen size of the Galaxy S22?\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('mentions 6.1', () => pm.expect(pm.response.json().answer).to.include('6.1'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "3. Chatbot - comparison & memory",
+      "item": [
+        {
+          "name": "3b S23 vs S22 performance (saves session)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question\": \"How does the Galaxy S23 compare to the S22 in terms of performance?\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const r = pm.response.json();",
+            "pm.test('comparison of two phones', () => { pm.expect(r.intent).to.eql('comparison'); pm.expect(r.phones.length).to.eql(2); });",
+            "pm.collectionVariables.set('sessionId', r.session_id);"
+          ]}}]
+        },
+        {
+          "name": "3c Follow-up: and their price? (uses session)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question\": \"And what about their price?\",\n  \"session_id\": \"{{sessionId}}\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('remembered both phones', () => pm.expect(pm.response.json().phones.length).to.eql(2));"
+          ]}}]
+        },
+        {
+          "name": "3d Batch - several questions at once",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat/batch",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"questions\": [\n    \"What chipset does the Galaxy S24 use?\",\n    \"How much does it cost?\"\n  ]\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('two answers', () => pm.expect(pm.response.json().length).to.eql(2));"
+          ]}}]
+        },
+        {
+          "name": "3e Non-Samsung phone (out of scope)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question\": \"Tell me about the iPhone 15\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('out of scope', () => pm.expect(pm.response.json().intent).to.eql('out_of_scope'));"
+          ]}}]
+        },
+        {
+          "name": "3f Clear the chat session",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/chat/{{sessionId}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "4. Multi-agent review",
+      "item": [
+        {
+          "name": "4a Review Galaxy S23 (takes 2-4 min)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/review",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"Galaxy S23\",\n  \"focus\": \"camera\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const agents = pm.response.json().agent_trace.map(t => t.agent);",
+            "pm.test('all 5 agents ran', () => pm.expect(agents.slice(0, 5)).to.eql(['Coordinator', 'Spec Retriever', 'Market Analyst', 'Review Writer', 'Fact Checker']));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "5. Error handling",
+      "item": [
+        {
+          "name": "5a Unknown phone -> 404",
+          "request": { "method": "GET", "url": "{{baseUrl}}/phones/iphone-15" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ]}}]
+        },
+        {
+          "name": "5b Invalid ranking metric -> 400",
+          "request": { "method": "GET", "url": "{{baseUrl}}/rankings/bogus" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ]}}]
+        },
+        {
+          "name": "5c Question too short -> 422",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chat",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question\": \"x\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 422', () => pm.response.to.have.status(422));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}
