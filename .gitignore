@@ -6,3 +6,4 @@ __pycache__/
 *.db
 # raw GSMArena HTML cache (re-creatable; the structured export data/phones.json is committed)
 data/raw/
+*.ipynb
